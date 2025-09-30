@@ -3062,4 +3062,3 @@ function RFZ_UI.CreateWindow(config)
 end
 
 return RFZ_UI
-return RFZ_UI
