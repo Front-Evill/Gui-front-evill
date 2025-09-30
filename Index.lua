@@ -2736,7 +2736,6 @@ function RFZ_UI.CreateWindow(config)
             SelectedLabel.Font = Enum.Font.Gotham
             SelectedLabel.TextXAlignment = Enum.TextXAlignment.Right
             SelectedLabel.Parent = ContentFrame
-            SelectedLabel.Text = value
             local IsOpen = false
             
             if Multi then
