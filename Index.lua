@@ -1,6 +1,7 @@
 local RFZ_UI = {}
 
-function RFZ_UI:CreateWindow(config)
+function RFZ_UI.CreateWindow(config)
+    config = config or {}
     local Title = config.Title or "RFZ"
     local SubTitle = config.SubTitle or "BY FRONT EVILL"
     local Size = config.Size or UDim2.new(0, 580, 0, 460)
