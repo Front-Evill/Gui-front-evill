@@ -1,5 +1,21 @@
 local RFZ_UI = {}
 
+local Icons = {
+    home = "rbxassetid://10734949856",
+    settings = "rbxassetid://10734950309",
+    user = "rbxassetid://10747374131",
+    search = "rbxassetid://10734898664",
+    menu = "rbxassetid://10747384394",
+    close = "rbxassetid://10747372167",
+    minimize = "rbxassetid://10734896958",
+    maximize = "rbxassetid://10734898082",
+    restore = "rbxassetid://10734949586",
+    trash = "rbxassetid://10747384394",
+    plus = "rbxassetid://10747372992",
+    check = "rbxassetid://10734896144",
+    x = "rbxassetid://10747384394"
+}
+
 function RFZ_UI.CreateWindow(config)
     config = config or {}
     local Title = config.Title or "RFZ"
@@ -10,6 +26,11 @@ function RFZ_UI.CreateWindow(config)
     local Acrylic = config.Acrylic ~= false
     local ToggleButton = config.ToggleButton or {}
     
+    local CurrentTheme = Theme
+    local IsMaximized = false
+    local OriginalSize = Size
+    local OriginalPosition = UDim2.new(0.5, -Size.X.Offset/2, 0.5, -Size.Y.Offset/2)
+    
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "RFZ_UI"
     ScreenGui.ResetOnSpawn = false
@@ -18,7 +39,7 @@ function RFZ_UI.CreateWindow(config)
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Size = Size
-    MainFrame.Position = UDim2.new(0.5, -Size.X.Offset/2, 0.5, -Size.Y.Offset/2)
+    MainFrame.Position = OriginalPosition
     MainFrame.BackgroundColor3 = Theme == "Dark" and Color3.fromRGB(30, 30, 30) or Color3.fromRGB(255, 255, 255)
     MainFrame.BackgroundTransparency = Acrylic and 0.3 or 0.1
     MainFrame.BorderSizePixel = 0
@@ -37,7 +58,7 @@ function RFZ_UI.CreateWindow(config)
     
     local TitleLabel = Instance.new("TextLabel")
     TitleLabel.Name = "Title"
-    TitleLabel.Size = UDim2.new(1, -20, 0, 30)
+    TitleLabel.Size = UDim2.new(1, -150, 0, 30)
     TitleLabel.Position = UDim2.new(0, 10, 0, 5)
     TitleLabel.BackgroundTransparency = 1
     TitleLabel.Text = Title
@@ -49,7 +70,7 @@ function RFZ_UI.CreateWindow(config)
     
     local SubTitleLabel = Instance.new("TextLabel")
     SubTitleLabel.Name = "SubTitle"
-    SubTitleLabel.Size = UDim2.new(1, -20, 0, 20)
+    SubTitleLabel.Size = UDim2.new(1, -150, 0, 20)
     SubTitleLabel.Position = UDim2.new(0, 10, 0, 35)
     SubTitleLabel.BackgroundTransparency = 1
     SubTitleLabel.Text = SubTitle
@@ -59,10 +80,78 @@ function RFZ_UI.CreateWindow(config)
     SubTitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     SubTitleLabel.Parent = HeaderFrame
     
+    local ControlsFrame = Instance.new("Frame")
+    ControlsFrame.Name = "Controls"
+    ControlsFrame.Size = UDim2.new(0, 120, 0, 40)
+    ControlsFrame.Position = UDim2.new(1, -130, 0, 10)
+    ControlsFrame.BackgroundTransparency = 1
+    ControlsFrame.Parent = HeaderFrame
+    
+    local function CreateControlButton(icon, position)
+        local Btn = Instance.new("ImageButton")
+        Btn.Size = UDim2.new(0, 35, 0, 35)
+        Btn.Position = position
+        Btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        Btn.BackgroundTransparency = 0.5
+        Btn.BorderSizePixel = 0
+        Btn.Image = Icons[icon]
+        Btn.ImageColor3 = Color3.fromRGB(255, 255, 255)
+        Btn.ScaleType = Enum.ScaleType.Fit
+        Btn.Parent = ControlsFrame
+        
+        local Corner = Instance.new("UICorner")
+        Corner.CornerRadius = UDim.new(0, 8)
+        Corner.Parent = Btn
+        
+        return Btn
+    end
+    
+    local MaximizeBtn = CreateControlButton("maximize", UDim2.new(0, 0, 0, 0))
+    local MinimizeBtn = CreateControlButton("minimize", UDim2.new(0, 40, 0, 0))
+    local CloseBtn = CreateControlButton("trash", UDim2.new(0, 80, 0, 0))
+    
+    MaximizeBtn.MouseButton1Click:Connect(function()
+        if IsMaximized then
+            MainFrame.Size = OriginalSize
+            MainFrame.Position = OriginalPosition
+            MaximizeBtn.Image = Icons.maximize
+            IsMaximized = false
+        else
+            OriginalSize = MainFrame.Size
+            OriginalPosition = MainFrame.Position
+            MainFrame.Size = UDim2.new(1, -40, 1, -40)
+            MainFrame.Position = UDim2.new(0, 20, 0, 20)
+            MaximizeBtn.Image = Icons.restore
+            IsMaximized = true
+        end
+    end)
+    
+    MinimizeBtn.MouseButton1Click:Connect(function()
+        MainFrame.Visible = false
+    end)
+    
+    CloseBtn.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()
+    end)
+    
+    local TabsFrame = Instance.new("Frame")
+    TabsFrame.Name = "Tabs"
+    TabsFrame.Size = UDim2.new(1, -20, 0, 50)
+    TabsFrame.Position = UDim2.new(0, 10, 0, 65)
+    TabsFrame.BackgroundTransparency = 1
+    TabsFrame.Parent = MainFrame
+    
+    local TabsLayout = Instance.new("UIListLayout")
+    TabsLayout.FillDirection = Enum.FillDirection.Horizontal
+    TabsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    TabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TabsLayout.Padding = UDim.new(0, 8)
+    TabsLayout.Parent = TabsFrame
+    
     local ContentFrame = Instance.new("ScrollingFrame")
     ContentFrame.Name = "Content"
-    ContentFrame.Size = UDim2.new(1, -20, 1, -80)
-    ContentFrame.Position = UDim2.new(0, 10, 0, 70)
+    ContentFrame.Size = UDim2.new(1, -20, 1, -135)
+    ContentFrame.Position = UDim2.new(0, 10, 0, 125)
     ContentFrame.BackgroundTransparency = 1
     ContentFrame.BorderSizePixel = 0
     ContentFrame.ScrollBarThickness = 4
@@ -75,8 +164,6 @@ function RFZ_UI.CreateWindow(config)
     
     local ToggleBtn = Instance.new("TextButton")
     ToggleBtn.Name = "ToggleButton"
-    ToggleBtn.Size = UDim2.new(0, 100, 0, 40)
-    ToggleBtn.Position = UDim2.new(0, 10, 0, 10)
     ToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     ToggleBtn.BackgroundTransparency = 0.3
     ToggleBtn.BorderSizePixel = 0
@@ -86,21 +173,29 @@ function RFZ_UI.CreateWindow(config)
     ToggleBtn.Parent = ScreenGui
     
     if ToggleButton.UseImage and ToggleButton.ImageId then
+        ToggleBtn.Size = UDim2.new(0, 50, 0, 50)
+        ToggleBtn.Position = UDim2.new(0, 10, 0, 10)
         ToggleBtn.Text = ""
         local ImageLabel = Instance.new("ImageLabel")
         ImageLabel.Size = UDim2.new(1, -10, 1, -10)
         ImageLabel.Position = UDim2.new(0, 5, 0, 5)
         ImageLabel.BackgroundTransparency = 1
-        ImageLabel.Image = "rbxassetid://" .. ToggleButton.ImageId
+        ImageLabel.Image = tonumber(ToggleButton.ImageId) and "rbxassetid://" .. ToggleButton.ImageId or Icons[ToggleButton.ImageId] or ToggleButton.ImageId
         ImageLabel.ScaleType = Enum.ScaleType.Fit
         ImageLabel.Parent = ToggleBtn
+        
+        local Corner = Instance.new("UICorner")
+        Corner.CornerRadius = UDim.new(0, 12)
+        Corner.Parent = ToggleBtn
     else
+        ToggleBtn.Size = UDim2.new(0, 100, 0, 40)
+        ToggleBtn.Position = UDim2.new(0, 10, 0, 10)
         ToggleBtn.Text = ToggleButton.Text or "OPEN"
+        
+        local Corner = Instance.new("UICorner")
+        Corner.CornerRadius = UDim.new(0, 8)
+        Corner.Parent = ToggleBtn
     end
-    
-    local BtnCorner = Instance.new("UICorner")
-    BtnCorner.CornerRadius = UDim.new(0, 8)
-    BtnCorner.Parent = ToggleBtn
     
     local Dragging = false
     local DragInput, DragStart, StartPos
@@ -181,8 +276,154 @@ function RFZ_UI.CreateWindow(config)
     ScreenGui.Parent = game:GetService("CoreGui")
     
     local Window = {}
+    local Tabs = {}
+    local CurrentTab = nil
+    
+    local function GetThemeColor()
+        if CurrentTheme == "Dark" then
+            return Color3.fromRGB(30, 30, 30)
+        elseif CurrentTheme == "White" then
+            return Color3.fromRGB(255, 255, 255)
+        elseif CurrentTheme == "Red" then
+            return Color3.fromRGB(255, 0, 0)
+        elseif CurrentTheme == "Black" then
+            return Color3.fromRGB(0, 0, 0)
+        elseif CurrentTheme == "Purple" then
+            return Color3.fromRGB(150, 0, 255)
+        else
+            return Color3.fromRGB(30, 30, 30)
+        end
+    end
+    
+    function Window:AddTab(config)
+        local TabTitle = config.Title or "Tab"
+        local TabIcon = config.Icon
+        
+        local TabButton = Instance.new("TextButton")
+        TabButton.Size = UDim2.new(0, 120, 0, 45)
+        TabButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        TabButton.BackgroundTransparency = 0.5
+        TabButton.BorderSizePixel = 0
+        TabButton.Font = Enum.Font.GothamBold
+        TabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+        TabButton.TextSize = 14
+        TabButton.Parent = TabsFrame
+        
+        local TabCorner = Instance.new("UICorner")
+        TabCorner.CornerRadius = UDim.new(0, 8)
+        TabCorner.Parent = TabButton
+        
+        if TabIcon then
+            TabButton.Text = ""
+            local IconFrame = Instance.new("Frame")
+            IconFrame.Size = UDim2.new(1, 0, 1, 0)
+            IconFrame.BackgroundTransparency = 1
+            IconFrame.Parent = TabButton
+            
+            local IconImage = Instance.new("ImageLabel")
+            IconImage.Size = UDim2.new(0, 25, 0, 25)
+            IconImage.Position = UDim2.new(0, 10, 0.5, -12.5)
+            IconImage.BackgroundTransparency = 1
+            IconImage.Image = tonumber(TabIcon) and "rbxassetid://" .. TabIcon or Icons[TabIcon] or TabIcon
+            IconImage.ImageColor3 = Color3.fromRGB(200, 200, 200)
+            IconImage.ScaleType = Enum.ScaleType.Fit
+            IconImage.Parent = IconFrame
+            
+            local TextLabel = Instance.new("TextLabel")
+            TextLabel.Size = UDim2.new(1, -45, 1, 0)
+            TextLabel.Position = UDim2.new(0, 40, 0, 0)
+            TextLabel.BackgroundTransparency = 1
+            TextLabel.Text = TabTitle
+            TextLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+            TextLabel.TextSize = 14
+            TextLabel.Font = Enum.Font.GothamBold
+            TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+            TextLabel.Parent = IconFrame
+        else
+            TabButton.Text = TabTitle
+        end
+        
+        local TabContent = Instance.new("Frame")
+        TabContent.Size = UDim2.new(1, 0, 1, 0)
+        TabContent.BackgroundTransparency = 1
+        TabContent.Visible = false
+        TabContent.Parent = ContentFrame
+        
+        local TabContentLayout = Instance.new("UIListLayout")
+        TabContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        TabContentLayout.Padding = UDim.new(0, 8)
+        TabContentLayout.Parent = TabContent
+        
+        TabButton.MouseButton1Click:Connect(function()
+            for _, tab in pairs(Tabs) do
+                tab.Button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+                tab.Button.BackgroundTransparency = 0.5
+                tab.Content.Visible = false
+                
+                if tab.Button:FindFirstChild("Frame") then
+                    for _, child in pairs(tab.Button.Frame:GetChildren()) do
+                        if child:IsA("ImageLabel") then
+                            child.ImageColor3 = Color3.fromRGB(200, 200, 200)
+                        elseif child:IsA("TextLabel") then
+                            child.TextColor3 = Color3.fromRGB(200, 200, 200)
+                        end
+                    end
+                else
+                    tab.Button.TextColor3 = Color3.fromRGB(200, 200, 200)
+                end
+            end
+            
+            TabButton.BackgroundColor3 = GetThemeColor()
+            TabButton.BackgroundTransparency = 0.3
+            TabContent.Visible = true
+            
+            if TabButton:FindFirstChild("Frame") then
+                for _, child in pairs(TabButton.Frame:GetChildren()) do
+                    if child:IsA("ImageLabel") then
+                        child.ImageColor3 = Color3.fromRGB(255, 255, 255)
+                    elseif child:IsA("TextLabel") then
+                        child.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    end
+                end
+            else
+                TabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            end
+            
+            CurrentTab = {Button = TabButton, Content = TabContent}
+        end)
+        
+        if #Tabs == 0 then
+            TabButton.BackgroundColor3 = GetThemeColor()
+            TabButton.BackgroundTransparency = 0.3
+            TabContent.Visible = true
+            
+            if TabButton:FindFirstChild("Frame") then
+                for _, child in pairs(TabButton.Frame:GetChildren()) do
+                    if child:IsA("ImageLabel") then
+                        child.ImageColor3 = Color3.fromRGB(255, 255, 255)
+                    elseif child:IsA("TextLabel") then
+                        child.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    end
+                end
+            else
+                TabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            end
+            
+            CurrentTab = {Button = TabButton, Content = TabContent}
+        end
+        
+        local Tab = {
+            Button = TabButton,
+            Content = TabContent
+        }
+        
+        table.insert(Tabs, Tab)
+        
+        return TabContent
+    end
     
     function Window:SetTheme(theme)
+        CurrentTheme = theme
         if theme == "Dark" then
             MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
             TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -203,6 +444,10 @@ function RFZ_UI.CreateWindow(config)
             MainFrame.BackgroundColor3 = Color3.fromRGB(150, 0, 255)
             TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
             SubTitleLabel.TextColor3 = Color3.fromRGB(220, 180, 255)
+        end
+        
+        if CurrentTab then
+            CurrentTab.Button.BackgroundColor3 = GetThemeColor()
         end
     end
     
