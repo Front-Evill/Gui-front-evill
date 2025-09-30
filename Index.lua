@@ -86,7 +86,10 @@ local TweenService = game:GetService("TweenService")
 
 local function CreateGradient(parent, colors)
     local gradient = Instance.new("UIGradient")
-    gradient.Color = ColorSequence.new(colors)
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, colors[1]),
+        ColorSequenceKeypoint.new(1, colors[2])
+    })
     gradient.Rotation = 45
     gradient.Parent = parent
     return gradient
